@@ -10,9 +10,9 @@
 defined('_JEXEC') or die('Restricted access');
 
 //Script class
-class plgapieasyblogInstallerScript
+class plgApiEasyblogInstallerScript
 {
-	public function postflight($type, $parent)
+	function postflight($type, $parent)
 	{
 		//If type is install
 		if ($type == 'install')
@@ -30,7 +30,7 @@ class plgapieasyblogInstallerScript
 
 			$fields = array(
 			$db->quoteName('enabled') . ' = ' . (int) 1,
-			$db->quoteName('ordering') . ' = ' (int) 9999
+			$db->quoteName('ordering') . ' = ' . (int) 9999
 			);
 
 			$conditions = array(
