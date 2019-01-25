@@ -12,19 +12,19 @@ defined('_JEXEC') or die('Restricted access');
 //Script class
 class plgApiEasyblogInstallerScript
 {
-	function postflight($type, $parent)
+	public function postflight($type, $parent)
 	{
 		//If type is install
 		if ($type == 'install')
 		{
-			//Move library file to Joomla libraries and delete it from plugin			
+			//Move library file to Joomla libraries and delete it from plugin
 			JFolder::move(JPATH_SITE.'/plugins/api/easyblog/libraries/simpleschema', JPATH_SITE.'/libraries/simpleschema');
 			JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/libraries');
 
-			//Move helper file to easyblog helpers and delete it from plugin			
+			//Move helper file to easyblog helpers and delete it from plugin
 			//JFile::move(JPATH_SITE.'/plugins/api/easyblog/components/com_easyblog/helpers/simpleschema.php', JPATH_SITE.'/components/com_easyblog/helpers/simpleschema.php');
 			//JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/components');
-			
+
 			$db = JFactory::getDbo();
 			$query = $db->getQuery(true);
 
@@ -34,14 +34,14 @@ class plgApiEasyblogInstallerScript
 			);
 
 			$conditions = array(
-			$db->quoteName('name') . ' = ' . $db->quote('Api - Easyblog'), 
+			$db->quoteName('name') . ' = ' . $db->quote('Api - Easyblog'),
 			$db->quoteName('type') . ' = ' . $db->quote('plugin')
 			);
 
 			$query->update($db->quoteName('#__extensions'))->set($fields)->where($conditions);
 
-			$db->setQuery($query);   
-			$db->execute();	
+			$db->setQuery($query);
+			$db->execute();
 		}
 		return true;
 	}
