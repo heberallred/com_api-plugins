@@ -59,11 +59,16 @@ class EasyblogApiResourceBlog extends ApiResource
      *
      * @return void
      */
+
+
     public function post()
     {
-        $input = JFactory::getApplication()->input;
+        $app = JFactory::getApplication();
+        $input = $app->input;
+        $postData = $input->post;
         $blog = EasyBlogHelper::table('Blog');
-        $data = $input->post->getArray(array());
+        $data = $postData->getArray(array(), null, 'RAW');
+        JLog::add(print_r($data, true), JLog::DEBUG, 'easyBlogApiPlugin');
         $log_user = $this->plugin->get('user')->id;
         $createTag = array();
         $res = new stdClass;
@@ -95,7 +100,11 @@ class EasyblogApiResourceBlog extends ApiResource
         $data['published'] = $input->get('published', 1, 'INT');
         $data['created_by'] = $log_user;
         $data['doctype'] = 'legacy';
+        JLog::add($data['intro'], JLog::DEBUG, 'easyBlogApiPlugin');
+        JLog::add(implode($data), JLog::DEBUG, 'easyBlogApiPlugin');
 
+
+        // Apply the data to the post
         $post->bind($data, array());
 
         // Default options
@@ -127,10 +136,12 @@ class EasyblogApiResourceBlog extends ApiResource
         $item = EB::formatter('entry', $bpost);
         $scm_obj = new EasyBlogSimpleSchema_plg;
         $item = new stdClass;
-        $item->result[] = $scm_obj->mapPost($item, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
+        $item->result[] = $scm_obj->mapPost($item, '');
+//        $item->result[] = $scm_obj->mapPost($item, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 
         $this->plugin->setResponse($item);
     }
+
 
     /**
      * Function to get blog details

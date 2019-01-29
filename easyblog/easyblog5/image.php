@@ -35,6 +35,7 @@ require_once(EBLOG_ADMIN_INCLUDES . '/mediamanager/adapters/abstract.php');
 
 //require_once( EBLOG_ADMIN_INCLUDES . '/mediamanager/adapters/types/image.php' );
 
+
 class EasyblogApiResourceImage extends ApiResource
 {
 
@@ -51,13 +52,18 @@ class EasyblogApiResourceImage extends ApiResource
         */
 
         $input = JFactory::getApplication()->input;
+        JLog::add(implode($input), JLog::DEBUG, 'easyBlogApiPlugin');
         $log_user = $this->plugin->get('user')->id;
         $res = new stdClass;
-        // Let's get the path for the current request.
+        // Let's get the path for the current request - file or link
+        $fileUrl = JRequest::getVar('fileUrl', '', 'POST', 'string');
         $file = JRequest::getVar('file', '', 'FILES', 'array');
 
+        JLog::add($file, JLog::DEBUG, 'easyBlogApiPlugin');
+        JLog::add($fileUrl, JLog::DEBUG, 'easyBlogApiPlugin');
 
-        if ($file['name']) {
+
+        if ($fileUrl or $file['name']) {
             $post = EB::post(NULL);
             $post->create();
             $key = $post->id;
@@ -65,42 +71,53 @@ class EasyblogApiResourceImage extends ApiResource
             $place = 'post:' . $key;
             $key = null;
 
-            // The user might be from a subfolder?
-            $source = urldecode('/' . $file['name']);
+            if ($fileUrl) {
 
-            // @task: Let's find the exact path first as there could be 3 possibilities here.
-            // 1. Shared folder
-            // 2. User folder
-            //$absolutePath 		= EasyBlogMediaManager::getAbsolutePath( $source , $place );
-            //$absoluteURI		= EasyBlogMediaManager::getAbsoluteURI( $source , $place );
-
-            //$absolutePath 		= EasyBlogMediaManager::getPath( $source );
-            //$absoluteURI		= EasyBlogMediaManager::getUrl( $source );
-
-            $allowed = EasyBlogImage::canUploadFile($file, $message);
-
-            if ($allowed !== true) {
-                $res->status = 0;
-                $res->message = JText::_('PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE');
-                return $res;
             }
 
-            $media = new EasyBlogMediaManager();
-            //$upload_result		= $media->upload( $absolutePath , $absoluteURI , $file , $source , $place );
-            $upload_result = $media->upload($file, $place);
+            elseif
+            ($file['name']) {
 
-            //adjustment
-            $upload_result->key = $place . $source;
-            $upload_result->group = 'files';
-            $upload_result->parentKey = $place . '|/';
-            $upload_result->friendlyPath = 'My Media/' . $source;
-            unset($upload_result->variations);
 
-            $this->plugin->setResponse($upload_result);
+                // The user might be from a subfolder?
+                $source = urldecode('/' . $file['name']);
 
-            return $upload_result;
+                // @task: Let's find the exact path first as there could be 3 possibilities here.
+                // 1. Shared folder
+                // 2. User folder
+                //$absolutePath 		= EasyBlogMediaManager::getAbsolutePath( $source , $place );
+                //$absoluteURI		= EasyBlogMediaManager::getAbsoluteURI( $source , $place );
 
-        } else {
+                //$absolutePath 		= EasyBlogMediaManager::getPath( $source );
+                //$absoluteURI		= EasyBlogMediaManager::getUrl( $source );
+
+                $allowed = EasyBlogImage::canUploadFile($file, $message);
+
+                if ($allowed !== true) {
+                    $res->status = 0;
+                    $res->message = JText::_('PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE');
+                    return $res;
+                }
+
+                $media = new EasyBlogMediaManager();
+                //$upload_result		= $media->upload( $absolutePath , $absoluteURI , $file , $source , $place );
+                $upload_result = $media->upload($file, $place);
+
+                //adjustment
+                $upload_result->key = $place . $source;
+                $upload_result->group = 'files';
+                $upload_result->parentKey = $place . '|/';
+                $upload_result->friendlyPath = 'My Media/' . $source;
+                unset($upload_result->variations);
+
+                $this->plugin->setResponse($upload_result);
+
+                return $upload_result;
+
+            }
+        }
+
+        else {
             $this->plugin->setResponse($this->getErrorResponse(404, __FUNCTION__ . JText::_('PLG_API_EASYBLOG_UPLOAD_UNSUCCESSFULL')));
         }
     }
